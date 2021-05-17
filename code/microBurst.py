@@ -19,7 +19,7 @@ def main():
     pkt = Ether(src=get_if_hwaddr(iface), dst='08:00:27:00:00:07') / IP(dst=addr) / UDP(dport=1234, sport=random.randint(49152,65535)) / payload 
     
     while True:
-        Mbps = (random.randint(10,50))
+        Mbps = (random.randint(50,80))
         Sleep = random.uniform(0.01,1)
         print(Mbps, Sleep)
         sendpfast(pkt, iface=iface, mbps=Mbps)
