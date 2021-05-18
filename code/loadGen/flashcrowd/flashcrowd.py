@@ -73,10 +73,6 @@ def run(args):
     # setup logger
     logger = logging.getLogger("run")
 
-    # set the boundaries
-    start = now = datetime.datetime.now()
-    end   = now + datetime.timedelta(minutes=args.duration)
-
     Rnorm,S,n = args.flashcrowd.split(',') # shock_level used was equal 20 and n equal 4
     # same values used on the paper "Managing flash crowds on the Internet", available in: https://ieeexplore.ieee.org/document/1240667
     Rnorm = int(Rnorm)
@@ -90,11 +86,6 @@ def run(args):
     # define queues to store proccess IDs
     global alive
     global alive_Rnorm
-  
-    duration = int(args.duration)
-    flash_events = int(args.flash_events)
-    sleep_flash = (duration / flash_events) * 60
-
 
     # Rflash is a peak of a flash event. Rnorm is a normal load.
     # Shock_level defines the order of magnitude increase in the load.
@@ -122,30 +113,20 @@ def run(args):
         pid_Rnorm = subprocess.Popen(rnorm_command, stderr=subprocess.STDOUT)
         alive_Rnorm.append(pid_Rnorm)
 
+    # rumpup phase
+    while num_client < Rflash:
+        last_pid = start_process(args)
+        alive.append(last_pid)
+        time.sleep(ru_sleep)
 
-    # until we finish
-    while (now < end):
+    # sustained phase
+    time.sleep(st_sleep)
 
-        # rumpup phase
-        while num_client < Rflash:
-            last_pid = start_process(args)
-            alive.append(last_pid)
-            time.sleep(ru_sleep)
-
-        # sustained phase
-        time.sleep(st_sleep)
-
-        # rampdown phase
-        for i in range(num_client):
-            terminate_process(alive[0])
-            alive.popleft()
-            time.sleep(rd_sleep)
-
-        # sleep (random) for a new flash_event
-        time.sleep(random.uniform(0,sleep_flash))
-
-        # refresh the timer
-        now = datetime.datetime.now()
+    # rampdown phase
+    for i in range(num_client):
+        terminate_process(alive[0])
+        alive.popleft()
+        time.sleep(rd_sleep)
 
     # kill instances from Rnorm load
     for i in range(Rnorm):
@@ -164,10 +145,6 @@ def main():
     parser.add_argument("-v", "--verbose", dest="verbose", action="count", help="set verbosity level [default: %(default)s]")
     parser.add_argument("-f", "--flashcrowd", dest="flashcrowd", metavar='Rnorm,S,n', help="set the flashcrowd behavior, that varies with Rnorm (normal load), S (shock_level) and n (constant used in rampdown)")
     parser.add_argument("-l", "--playlist", dest="playlist", help="Set the playlist for the clients", required=True)
-    
-    # positional arguments (duration, flash_events)
-    parser.add_argument("duration", type=float, help="set the duration of the experiment in minutes")    
-    parser.add_argument("flash_events", type=float, help="set the number of flash events in the experiment")
 
     args = parser.parse_args()
      

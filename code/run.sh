@@ -1,13 +1,14 @@
-#start INT collector in sinkServer
-#nohup vagrant ssh sinkServer -c 'timeout 600 sudo /vagrant/code/receive_int.py' > /dev/null &
+python3 /vagrant/code/run_experiment.py 100 8
 
-#Start INT Traffic in dashServer
-#nohup vagrant ssh dashServer -c 'timeout 600 sudo /vagrant/code/send_int.py 192.168.50.52' > /dev/null &
+<<USO
+usage: run_experiment.py [-h] [-V] [-v] duration flash_events
 
-#Start clientVlc
-nohup vagrant ssh clientVlc -c 'export DISPLAY=:1 && timeout 6000 /vagrant/host-setup/clientVlc/client.sh' > /dev/null &
+positional arguments:
+  duration       set the duration of the experiment in minutes
+  flash_events   set the number of flash events in the experiment
 
-#Start loadGens
-nohup vagrant ssh loadGen1 -c 'export DISPLAY=:1 && timeout 6000 /vagrant/code/loadGen/flashcrowd/flashcrowd.sh' > /dev/null &
-nohup vagrant ssh loadGen2 -c 'export DISPLAY=:1 && timeout 6000 /vagrant/code/loadGen/flashcrowd/flashcrowd.sh' > /dev/null &
-nohup vagrant ssh loadGen3 -c 'export DISPLAY=:1 && timeout 6000 /vagrant/code/loadGen/flashcrowd/flashcrowd.sh' > /dev/null &
+optional arguments:
+  -h, --help     show this help message and exit
+  -V, --version  show program's version number and exit
+  -v, --verbose  set verbosity level [default: None]
+USO
